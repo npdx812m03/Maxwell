@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: openfaas
+    component: redis
+  name: openfaas-zhy-redis
+  namespace: "openfaas-zhy"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      serviceAccountName: openfaas-controller
+      nodeSelector:
+        openfaas: zhy
+      containers:
+      - name: redis
+        resources:
+          requests:
+            cpu: 200m
+            memory: 500Mi
+        image: redis:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+          protocol: TCP

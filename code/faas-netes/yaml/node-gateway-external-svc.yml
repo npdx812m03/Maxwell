@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: openfaas
+    component: node-gateway
+  name: node-gateway
+  namespace: "openfaas-zhy"
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+      nodePort: 30912
+  selector:
+    app: node-gateway

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: rnn-lfs
+  namespace: openfaas-zhy
+spec:
+  replicas: 1
+  selector:
+    name: tensorflow-worker-gpu-lfs
+  template:
+    metadata:
+      labels:
+        name: tensorflow-worker-gpu-lfs
+        role: worker-gpu
+    spec:
+      nodeSelector:
+          openfaas: zhy 
+      containers:
+        - name: rnn
+          image: tensorflow/tensorflow:nightly-gpu-py3-jupyter
+          ports:
+           - containerPort: 2222

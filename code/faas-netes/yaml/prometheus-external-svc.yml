@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: openfaas
+    component: prometheus
+  name: prometheus-external
+  namespace: "openfaas-zhy"
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+      nodePort: 31912
+  selector:
+    app: prometheus

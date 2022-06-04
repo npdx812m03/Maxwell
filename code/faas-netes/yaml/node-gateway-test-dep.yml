@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: openfaas
+    component: node-gateway
+  name: node-gateway
+  namespace: "openfaas-zhy"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node-gateway
+  template:
+    metadata:
+      labels:
+        app: node-gateway
+    spec:
+      serviceAccountName: nfn-svc
+      nodeSelector:
+        # openfaas-zhy: worker
+        openfaas: zhy
+      containers:
+      - name: node-gateway-test
+        resources:
+          requests:
+            cpu: 50m
+            memory: 150Mi
+        image: ives66/node-gateway-test:latest8
+        # image: ghcr.io/openfaas/gateway:0.20.12
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP

@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: openfaas
+    component: prometheus
+  name: prometheus
+  namespace: "openfaas-zhy"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+      annotations:
+        sidecar.istio.io/inject: "true"
+        checksum/prometheus-config: "8c39933e947a321b5349b4a2a48bbf599c0a9258aabbc251343798ee20337d97"
+    spec:
+      serviceAccountName: openfaas-prometheus
+      nodeSelector:
+        openfaas: zhy
+      containers:
+      - name: prometheus
+        resources:
+            requests:
+              memory: 550Mi
+        image: prom/prometheus:v2.11.0
+        command:
+          - "prometheus"
+          - "--config.file=/etc/prometheus/prometheus.yml"
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          timeoutSeconds: 31
+        readinessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          timeoutSeconds: 31
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/prometheus/prometheus.yml
+          name: prometheus-config
+          subPath: prometheus.yml
+        - mountPath: /prometheus/data
+          name: prom-data
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+            items:
+              - key: prometheus.yml
+                path: prometheus.yml
+                mode: 0644
+        - name: prom-data
+          emptyDir: {}

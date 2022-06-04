@@ -1,0 +1,165 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: openfaas
+    component: faas-controller
+  name: openfaas-controller
+  namespace: "openfaas-zhy"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app: openfaas
+    component: faas-controller
+  name: openfaas-controller
+  namespace: "openfaas-fn-zhy"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - update
+  - apiGroups:
+      - extensions
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - pods
+      - pods/log
+      - namespaces
+      - endpoints
+      - deployments
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app: openfaas
+    component: faas-controller
+  name: openfaas-profiles
+  namespace: "openfaas-zhy"
+rules:
+  - apiGroups:
+      - "openfaas.com"
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: openfaas
+    component: faas-controller
+  name: openfaas-controller
+  namespace: "openfaas-fn-zhy"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openfaas-controller
+subjects:
+  - kind: ServiceAccount
+    name: openfaas-controller
+    namespace: "openfaas-zhy"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: openfaas
+    component: faas-controller
+  name: openfaas-profiles
+  namespace: "openfaas-zhy"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openfaas-profiles
+subjects:
+  - kind: ServiceAccount
+    name: openfaas-controller
+    namespace: "openfaas-zhy"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prom-admin
+  namespace: "openfaas-zhy"
+
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["get", "watch", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prom-rbac
+subjects:
+  - kind: ServiceAccount
+    name: openfaas-controller
+    namespace: "openfaas-zhy"
+roleRef:
+  kind: ClusterRole
+  name: prom-admin
+  apiGroup: rbac.authorization.k8s.io

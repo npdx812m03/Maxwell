@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: openfaas
+    component: node-netes
+  name: node-netes
+  namespace: "openfaas-zhy"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node-netes
+  template:
+    metadata:
+      labels:
+        app: node-netes
+    spec:
+      serviceAccountName: openfaas-controller
+      volumes:
+      - name: faas-netes-temp-volume
+        emptyDir: {}
+      - name: auth
+        secret:
+          secretName: basic-auth
+      nodeSelector:
+        openfaas-zhy: worker
+      containers:
+      - name: node-netes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 160Mi
+        image: ives66/faas-netes:latest
+        # image: ghcr.io/openfaas/gateway:0.20.12
+        imagePullPolicy: Always
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsUser: 10001
+        env:
+        - name: port
+          value: "8081"
+        - name: function_namespace
+          value: "openfaas-fn-zhy"
+        - name: read_timeout
+          value: "60s"
+        - name: profiles_namespace
+          value: "openfaas-zhy"
+        - name: write_timeout
+          value: "60s"
+        - name: image_pull_policy
+          value: "Never"
+        - name: http_probe
+          value: "true"
+        - name: set_nonroot_user
+          value: "false"
+        - name: readiness_probe_initial_delay_seconds
+          value: "2"
+        - name: readiness_probe_timeout_seconds
+          value: "1"
+        - name: readiness_probe_period_seconds
+          value: "2"
+        - name: liveness_probe_initial_delay_seconds
+          value: "2"
+        - name: liveness_probe_timeout_seconds
+          value: "1"
+        - name: liveness_probe_period_seconds
+          value: "2"
+        - name: cluster_role
+          value: "false"
+        volumeMounts:
+        - mountPath: /tmp
+          name: faas-netes-temp-volume
+        ports:
+        - name: http
+          containerPort: 8081
+          protocol: TCP
